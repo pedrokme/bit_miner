@@ -46,8 +46,8 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
   int clickUpgradeLevel = 0;
   int manualClickUpgradeLevel = 0;
   List<Upgrade> upgrades = [
-    Upgrade(name: 'Valor do Click', baseCost: 10, clickRateMultiplier: 0, clickIndvValue: 0, manualClickMultiplier: 1, clickRateBase: 0),
-    Upgrade(name: 'Placa de Vídeo', baseCost: 40.0, clickRateMultiplier: 0.3, clickIndvValue: 0, manualClickMultiplier: 0, clickRateBase: 1),
+    Upgrade(name: 'Valor do Click', baseCost: 10, clickRateMultiplier: 0, clickIndvValue: 0, manualClickMultiplier: 0.3, clickRateBase: 0),
+    Upgrade(name: 'Placa de Vídeo', baseCost: 40.0, clickRateMultiplier: 0.5, clickIndvValue: 0, manualClickMultiplier: 0, clickRateBase: 1),
     // Adicione mais upgrades conforme necessário
   ];
 
@@ -79,9 +79,9 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
         clickValue += upgrade.manualClickMultiplier;
 
         if (upgrade.name == 'Placa de Vídeo') {
-          upgrade.baseCost *= 1.5;
+          upgrade.baseCost *= 1.3;
         } else if (upgrade.name == 'Valor do Click') {
-          upgrade.baseCost *= 1.32;
+          upgrade.baseCost *= 1.22;
         }
       });
 
@@ -173,10 +173,7 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
               child: Container(
                 width: 400,
                 decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/backgroundupgrade.jpg'), // Substitua pelo caminho correto da sua imagem de fundo
-                    fit: BoxFit.cover,
-                  ),
+                  color: Color.fromRGBO(38, 44, 58, 0.898)
                 ),
                 child: ListView(
                   padding: EdgeInsets.zero,
@@ -189,20 +186,23 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
                     ),
                     for (var upgrade in upgrades)
                       Container(
-                        padding: EdgeInsets.fromLTRB(0, 10, 0, 5),
+                        padding: EdgeInsets.fromLTRB(0, 0, 0, 70),
                         margin: EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Color.fromRGBO(27, 75, 114, 1), // Cor de fundo do upgrade
-                          borderRadius: BorderRadius.circular(10.0),
+                          image: DecorationImage(
+                            image: AssetImage('assets/backgroundupgrade.png'),
+                            fit: BoxFit.fill
+                          ),
                         ),
                         child: Tooltip(
                           message: 'Bitcoins por segundo: +${upgrade.clickIndvValue.toStringAsFixed(1)}\n'
                               'Aumento por segundo: +${(upgrade.clickRateMultiplier * 100).toStringAsFixed(0)}%\n'
                               'Aumento para cliques manuais: +${(upgrade.manualClickMultiplier * 100).toStringAsFixed(0)}%',
                           child: ListTile(
+                            contentPadding: EdgeInsets.only(left: 20),
                             textColor: Colors.white,
                             title: Text('${upgrade.name} - ${(upgrade.baseCost).toStringAsFixed(1)} bitcoins'),
-                            onTap: () => buyUpgrade(upgrade),
+                          onTap: () => buyUpgrade(upgrade),
                           ),
                         ),
                       ),
