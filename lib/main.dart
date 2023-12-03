@@ -6,9 +6,21 @@ void main() => runApp(BitcoinClickerApp());
 class Upgrade {
   String name;
   double baseCost;
-  double clickRateIncrease;
 
-  Upgrade({required this.name, required this.baseCost, required this.clickRateIncrease});
+  double clickRateMultiplier;
+  double clickRateBase;
+  double clickIndvValue;
+
+  double manualClickMultiplier;
+
+  Upgrade({
+    required this.name,
+    required this.baseCost,
+    required this.clickRateMultiplier,
+    required this.clickIndvValue,
+    required this.manualClickMultiplier,
+    required this.clickRateBase,
+  });
 }
 
 class BitcoinClickerApp extends StatelessWidget {
@@ -31,10 +43,11 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
   double clickValue = 1.0;
   double clickPerSecond = 0.0;
   int manualClicks = 0;
-  int clickUpgradeLevel = 0; // Nível do upgrade de clique
-  int clickPerSecondUpgradeLevel = 0; // Nível do upgrade de cliques por segundo
+  int clickUpgradeLevel = 0; // Nível do upgrade de cliques por segundo
+  int manualClickUpgradeLevel = 0; // Nível do upgrade de cliques manuais
   List<Upgrade> upgrades = [
-    Upgrade(name: 'Placa de Vídeo', baseCost: 40.0, clickRateIncrease: 1.5),
+    Upgrade(name: 'Valor do Click', baseCost: 10, clickRateMultiplier: 0, clickIndvValue: 0, manualClickMultiplier: 1, clickRateBase: 0),
+    Upgrade(name: 'Placa de Vídeo', baseCost: 40.0, clickRateMultiplier: 0.3, clickIndvValue: 0, manualClickMultiplier: 0, clickRateBase: 1),
     // Adicione mais upgrades conforme necessário
   ];
 
@@ -55,17 +68,30 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
     if (bitcoins >= upgrade.baseCost) {
       setState(() {
         bitcoins -= upgrade.baseCost;
-        clickPerSecond += upgrade.clickRateIncrease;
-        upgrade.baseCost *= 2; // Ajuste conforme necessário para o custo do próximo upgrade
+        
+        if (upgrade.clickRateBase == 0){
+          clickPerSecond += upgrade.clickRateBase;
+          upgrade.clickIndvValue += upgrade.clickRateBase;
+        } else {
+          clickPerSecond += upgrade.clickRateBase * upgrade.clickRateMultiplier;
+          upgrade.clickIndvValue += upgrade.clickRateBase * upgrade.clickRateMultiplier;
+        }
+
+        clickValue += upgrade.manualClickMultiplier;
+
+        if (upgrade.name == 'Placa de Vídeo'){
+          upgrade.baseCost *= 1.5; // Ajuste conforme necessário para o custo do próximo upgrade
+        } else if (upgrade.name == 'Valor do Click'){
+          upgrade.baseCost *= 1.32;
+        }
       });
 
       if (upgrade == upgrades[0]) {
-        // Se o upgrade for de clique, aumenta o nível do upgrade de clique
+        // Se o upgrade for de cliques por segundo, aumenta o nível do upgrade
         clickUpgradeLevel++;
-        clickValue *= 2;
       } else {
-        // Se o upgrade for de cliques por segundo, aumenta o nível do upgrade de cliques por segundo
-        clickPerSecondUpgradeLevel++;
+        // Se o upgrade for de cliques manuais, aumenta o nível do upgrade de cliques manuais
+        manualClickUpgradeLevel++;
       }
     }
   }
@@ -101,7 +127,7 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text(
-                  'Bitcoins: ${bitcoins.toStringAsFixed(2)}',
+                  'Bitcoins: ${(bitcoins/10000).toStringAsFixed(4)}',
                   style: TextStyle(fontSize: 24.0, color: Colors.white),
                 ),
                 SizedBox(height: 20.0),
@@ -137,28 +163,6 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
                     style: TextStyle(fontSize: 16.0, color: Colors.white),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (bitcoins >= 10.0) {
-                      setState(() {
-                        bitcoins -= 10.0;
-                        clickValue += 1.0;
-                      });
-                    }
-                  },
-                  child: Text('Melhorar o valor do clique (10 bitcoins)', style: TextStyle(color: Colors.white)),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (bitcoins >= 50.0) {
-                      setState(() {
-                        bitcoins -= 50.0;
-                        clickPerSecond += 0.5;
-                      });
-                    }
-                  },
-                  child: Text('Melhorar os bitcoins por segundo (50 bitcoins)', style: TextStyle(color: Colors.white)),
-                ),
               ],
             ),
           ),
@@ -170,23 +174,36 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
               bottom: 0,
               right: 0,
               child: Container(
-                width: 200,
-                color: Colors.white,
+                width: 400,
+                color: Color.fromRGBO(41, 51, 59, 20),
                 child: ListView(
                   padding: EdgeInsets.zero,
                   children: [
                     ListTile(
                       title: Text(
                         'Loja de Upgrades',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
                     for (var upgrade in upgrades)
-                      ListTile(
-                        title: Text('${upgrade.name} - ${upgrade.baseCost} bitcoins'),
-                        subtitle: Text('Aumento por segundo: +${upgrade.clickRateIncrease}'),
+                    Container(
+                      padding: EdgeInsets.fromLTRB(0, 10, 0, 5),
+                      margin: EdgeInsets.all(10),
+                      color: Color.fromRGBO(27, 75, 114, 1),
+                      child: ListTile(
+                        textColor: Colors.white,
+                        title: Text('${upgrade.name} - ${(upgrade.baseCost).toStringAsFixed(1)} bitcoins'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Bitconis por segundo: +${(upgrade.clickIndvValue).toStringAsFixed(1)}', style: TextStyle(color: Color.fromRGBO(1, 255, 1, 1)),),
+                            Text('Aumento por segundo: +${(upgrade.clickRateMultiplier) * 100}%'),
+                            Text('Aumento para cliques manuais: +${(upgrade.manualClickMultiplier) * 100}%'),
+                          ],
+                        ),
                         onTap: () => buyUpgrade(upgrade),
                       ),
+                    ),
                   ],
                 ),
               ),
