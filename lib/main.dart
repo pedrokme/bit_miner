@@ -43,8 +43,8 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
   double clickValue = 1.0;
   double clickPerSecond = 0.0;
   int manualClicks = 0;
-  int clickUpgradeLevel = 0; // Nível do upgrade de cliques por segundo
-  int manualClickUpgradeLevel = 0; // Nível do upgrade de cliques manuais
+  int clickUpgradeLevel = 0;
+  int manualClickUpgradeLevel = 0;
   List<Upgrade> upgrades = [
     Upgrade(name: 'Valor do Click', baseCost: 10, clickRateMultiplier: 0, clickIndvValue: 0, manualClickMultiplier: 1, clickRateBase: 0),
     Upgrade(name: 'Placa de Vídeo', baseCost: 40.0, clickRateMultiplier: 0.3, clickIndvValue: 0, manualClickMultiplier: 0, clickRateBase: 1),
@@ -56,7 +56,6 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
   @override
   void initState() {
     super.initState();
-    // Inicia o temporizador para atualizar os bitcoins por segundo
     Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
         bitcoins += clickPerSecond;
@@ -68,8 +67,8 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
     if (bitcoins >= upgrade.baseCost) {
       setState(() {
         bitcoins -= upgrade.baseCost;
-        
-        if (upgrade.clickRateBase == 0){
+
+        if (upgrade.clickRateBase == 0) {
           clickPerSecond += upgrade.clickRateBase;
           upgrade.clickIndvValue += upgrade.clickRateBase;
         } else {
@@ -79,18 +78,16 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
 
         clickValue += upgrade.manualClickMultiplier;
 
-        if (upgrade.name == 'Placa de Vídeo'){
-          upgrade.baseCost *= 1.5; // Ajuste conforme necessário para o custo do próximo upgrade
-        } else if (upgrade.name == 'Valor do Click'){
+        if (upgrade.name == 'Placa de Vídeo') {
+          upgrade.baseCost *= 1.5;
+        } else if (upgrade.name == 'Valor do Click') {
           upgrade.baseCost *= 1.32;
         }
       });
 
       if (upgrade == upgrades[0]) {
-        // Se o upgrade for de cliques por segundo, aumenta o nível do upgrade
         clickUpgradeLevel++;
       } else {
-        // Se o upgrade for de cliques manuais, aumenta o nível do upgrade de cliques manuais
         manualClickUpgradeLevel++;
       }
     }
@@ -127,7 +124,7 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text(
-                  'Bitcoins: ${(bitcoins/10000).toStringAsFixed(4)}',
+                  'Bitcoins: ${(bitcoins / 10000).toStringAsFixed(4)}',
                   style: TextStyle(fontSize: 24.0, color: Colors.white),
                 ),
                 SizedBox(height: 20.0),
@@ -141,7 +138,7 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
                       onTap: () => manualClick(),
                       child: Align(
                         alignment: Alignment.center,
-                        child: Text(''), // Adicione um Text vazio ou qualquer outro widget se desejar algum texto sobre a imagem
+                        child: Text(''),
                       ),
                     ),
                   ),
@@ -175,7 +172,12 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
               right: 0,
               child: Container(
                 width: 400,
-                color: Color.fromRGBO(41, 51, 59, 20),
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/backgroundupgrade.jpg'), // Substitua pelo caminho correto da sua imagem de fundo
+                    fit: BoxFit.cover,
+                  ),
+                ),
                 child: ListView(
                   padding: EdgeInsets.zero,
                   children: [
@@ -186,24 +188,24 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
                       ),
                     ),
                     for (var upgrade in upgrades)
-                    Container(
-                      padding: EdgeInsets.fromLTRB(0, 10, 0, 5),
-                      margin: EdgeInsets.all(10),
-                      color: Color.fromRGBO(27, 75, 114, 1),
-                      child: ListTile(
-                        textColor: Colors.white,
-                        title: Text('${upgrade.name} - ${(upgrade.baseCost).toStringAsFixed(1)} bitcoins'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Bitconis por segundo: +${(upgrade.clickIndvValue).toStringAsFixed(1)}', style: TextStyle(color: Color.fromRGBO(1, 255, 1, 1)),),
-                            Text('Aumento por segundo: +${(upgrade.clickRateMultiplier) * 100}%'),
-                            Text('Aumento para cliques manuais: +${(upgrade.manualClickMultiplier) * 100}%'),
-                          ],
+                      Container(
+                        padding: EdgeInsets.fromLTRB(0, 10, 0, 5),
+                        margin: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Color.fromRGBO(27, 75, 114, 1), // Cor de fundo do upgrade
+                          borderRadius: BorderRadius.circular(10.0),
                         ),
-                        onTap: () => buyUpgrade(upgrade),
+                        child: Tooltip(
+                          message: 'Bitcoins por segundo: +${upgrade.clickIndvValue.toStringAsFixed(1)}\n'
+                              'Aumento por segundo: +${(upgrade.clickRateMultiplier * 100).toStringAsFixed(0)}%\n'
+                              'Aumento para cliques manuais: +${(upgrade.manualClickMultiplier * 100).toStringAsFixed(0)}%',
+                          child: ListTile(
+                            textColor: Colors.white,
+                            title: Text('${upgrade.name} - ${(upgrade.baseCost).toStringAsFixed(1)} bitcoins'),
+                            onTap: () => buyUpgrade(upgrade),
+                          ),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
