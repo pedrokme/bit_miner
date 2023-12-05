@@ -61,18 +61,12 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
 
   bool showUpgrades = false;
 
-  @override
-  void initState() {
-    super.initState();
-    Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        bitcoins += clickPerSecond;
-      });
-    });
+  bool canBuyUpgrade(Upgrade upgrade) {
+    return bitcoins >= upgrade.baseCost;
   }
 
   void buyUpgrade(Upgrade upgrade) {
-    if (bitcoins >= upgrade.baseCost) {
+    if (canBuyUpgrade(upgrade)) {
       setState(() {
         bitcoins -= upgrade.baseCost;
 
@@ -114,16 +108,13 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       body: Stack(
         children: [
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('../assets/1.png'), // Substitua pelo caminho correto do seu arquivo GIF
+                image: AssetImage('../assets/1.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -172,75 +163,82 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
             ),
           ),
           AnimatedPositioned(
-      duration: Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      top: 0,
-      bottom: 0,
-      right: showUpgrades ? 0 : -400,
-      child: Container(
-        width: 400,
-        padding: EdgeInsets.only(left: 20, top: 30),
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('../assets/janelafundo.png'),
-            fit: BoxFit.fill,
-          ),
-        ),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            ListTile(
-              title: Text(
-                'Loja de Upgrades',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 37, 37, 37)),
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            top: 0,
+            bottom: 0,
+            right: showUpgrades ? 0 : -400,
+            child: Container(
+              width: 400,
+              padding: EdgeInsets.only(left: 20, top: 30),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('../assets/janelafundo.png'),
+                  fit: BoxFit.fill,
+                ),
+              ),
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  ListTile(
+                    title: Text(
+                      'Loja de Upgrades',
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 37, 37, 37)),
+                    ),
+                  ),
+                  for (var upgrade in upgrades)
+                    Container(
+                      margin: EdgeInsets.all(10),
+                      padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/backgroundupgrade.png'),
+                          fit: BoxFit.fill,
+                        ),
+                        color: canBuyUpgrade(upgrade) ? Colors.black.withOpacity(0.9) : Colors.black.withOpacity(0.5),
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          if (canBuyUpgrade(upgrade)) {
+                            buyUpgrade(upgrade);
+                          }
+                        },
+                        child: ListTile(
+                          leading: Image.asset(upgrade.iconPath, width: 100, height: 100),
+                          title: Text(
+                            '${upgrade.name} - ${((upgrade.baseCost) / 10000).toStringAsFixed(4)} bitcoins',
+                            style: TextStyle(fontSize: 20, color: canBuyUpgrade(upgrade) ? Colors.white : Colors.grey),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Bitcoins por segundo: +${(upgrade.autoClickIndvValue / 10000).toStringAsFixed(5)}',
+                                style: TextStyle(fontSize: 18, color: Color.fromRGBO(1, 255, 1, 1)),
+                              ),
+                              Text(
+                                'Bitcoins por click: +${(upgrade.clickIndvValue / 10000).toStringAsFixed(5)}',
+                                style: TextStyle(fontSize: 18, color: Color.fromRGBO(1, 175, 255, 1)),
+                              ),
+                              Text(
+                                'Aumento por segundo: +${((upgrade.clickRateMultiplier) / 10000).toStringAsFixed(5)}',
+                                style: TextStyle(fontSize: 16, color: Color.fromRGBO(199, 199, 199, 1)),
+                              ),
+                              Text(
+                                'Aumento para cliques: +${((upgrade.manualClickMultiplier) / 10000).toStringAsFixed(5)}',
+                                style: TextStyle(fontSize: 16, color: Color.fromRGBO(199, 199, 199, 1)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-            for (var upgrade in upgrades)
-              Container(
-                margin: EdgeInsets.all(10),
-                padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/backgroundupgrade.png'),
-                    fit: BoxFit.fill,
-                  ),
-                ),
-                child: ListTile(
-                  leading: Image.asset(upgrade.iconPath, width: 100, height: 100),
-                  title: Text(
-                    '${upgrade.name} - ${((upgrade.baseCost) / 10000).toStringAsFixed(4)} bitcoins',
-                    style: TextStyle(fontSize: 20, color: Colors.white),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Bitcoins por segundo: +${(upgrade.autoClickIndvValue / 10000).toStringAsFixed(5)}',
-                        style: TextStyle(fontSize: 18, color: Color.fromRGBO(1, 255, 1, 1)),
-                      ),
-                      Text(
-                        'Bitcoins por click: +${(upgrade.clickIndvValue / 10000).toStringAsFixed(5)}',
-                        style: TextStyle(fontSize: 18, color: Color.fromRGBO(1, 175, 255, 1)),
-                      ),
-                      Text(
-                        'Aumento por segundo: +${((upgrade.clickRateMultiplier) / 10000).toStringAsFixed(5)}',
-                        style: TextStyle(fontSize: 16, color: Color.fromRGBO(199, 199, 199, 1)),
-                      ),
-                      Text(
-                        'Aumento para cliques: +${((upgrade.manualClickMultiplier) / 10000).toStringAsFixed(5)}',
-                        style: TextStyle(fontSize: 16, color: Color.fromRGBO(199, 199, 199, 1)),
-                      ),
-                    ],
-                  ),
-                  onTap: () => buyUpgrade(upgrade),
-                ),
-              ),
-          ],
-        ),
+          ),
+        ],
       ),
-    ),
-  ],
-    ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
@@ -249,7 +247,7 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
         },
         child: showUpgrades
           ? Icon(Icons.close)
-          :Image.asset('../assets/23.png', width: 100, height: 100),
+          : Image.asset('../assets/23.png', width: 100, height: 100),
       ),
     );
   }
