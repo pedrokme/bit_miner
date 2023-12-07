@@ -53,13 +53,25 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
   int clickUpgradeLevel = 0;
   int manualClickUpgradeLevel = 0;
   List<Upgrade> upgrades = [
-    Upgrade(name: 'Valor do Click', baseCost: 10, clickRateMultiplier: 0, autoClickIndvValue: 0, clickIndvValue: 0, upgradeLevel: 0, manualClickMultiplier: 0.3, clickRateBase: 0, iconPath: '../assets/upgradesIcons/mouse.png'),
-    Upgrade(name: 'MTX 340', baseCost: 40.0, clickRateMultiplier: 0.5, autoClickIndvValue: 0, clickIndvValue: 0, upgradeLevel: 0, manualClickMultiplier: 0, clickRateBase: 1, iconPath: '../assets/upgradesIcons/placa_video_upgrade_1.png'),
-    Upgrade(name: 'MTX 720', baseCost: 300, clickRateMultiplier: 2.7, autoClickIndvValue: 0, clickIndvValue: 0, upgradeLevel: 0, manualClickMultiplier: 5, clickRateBase: 10, iconPath: '../assets/upgradesIcons/placa_video_upgrade_2.png')
+    Upgrade(name: 'Valor do Click', baseCost: 10, clickRateMultiplier: 0, autoClickIndvValue: 0, clickIndvValue: 0, upgradeLevel: 0, manualClickMultiplier: 0.5, clickRateBase: 0, iconPath: '../assets/upgradesIcons/mouse.png'),
+    Upgrade(name: 'MTX 340', baseCost: 40.0, clickRateMultiplier: 1, autoClickIndvValue: 0, clickIndvValue: 0, upgradeLevel: 0, manualClickMultiplier: 0, clickRateBase: 1, iconPath: '../assets/upgradesIcons/placa_video_upgrade_1.png'),
+    Upgrade(name: 'MTX 720', baseCost: 500, clickRateMultiplier: 5, autoClickIndvValue: 0, clickIndvValue: 0, upgradeLevel: 0, manualClickMultiplier: 5, clickRateBase: 15, iconPath: '../assets/upgradesIcons/placa_video_upgrade_2.png'),
+    Upgrade(name: 'Ficar Rico!', baseCost: 100000, clickRateMultiplier: 5000, autoClickIndvValue: 0, clickIndvValue: 0, upgradeLevel: 0, manualClickMultiplier: 1000, clickRateBase: 10000, iconPath: '../assets/upgradesIcons/bitcoin.png'),
     // Adicione mais upgrades conforme necessário
   ];
 
   bool showUpgrades = false;
+
+ @override
+  void initState() {
+    super.initState();
+    // Inicia o temporizador para atualizar os bitcoins por segundo
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        bitcoins += clickPerSecond;
+      });
+    });
+  }
 
   bool canBuyUpgrade(Upgrade upgrade) {
     return bitcoins >= upgrade.baseCost;
@@ -88,6 +100,8 @@ class _BitcoinClickerState extends State<BitcoinClicker> {
           upgrade.baseCost *= 1.34;
         } else if (upgrade.name == 'MTX 720') {
           upgrade.baseCost *= 1.56;
+        } else if (upgrade.name == 'Ficar Rico!'){
+          upgrade.baseCost *= 2;
         }
       });
 
